@@ -6,6 +6,7 @@ authors = ["Market Monster <marketmonster69@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
+pybit = "^2.4.1"
 
 [tool.poetry.dev-dependencies]
 

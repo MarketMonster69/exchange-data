@@ -34,13 +34,37 @@ def get_sample_kline():
 
     return response
 
+def update_last(f_path, symbol, interval):
+    df = pd.read_csv(f_path)
+    last_row_csv = df.tail(1).values.tolist()
+    startTime = last_row_csv[0][5]
+    df = df.iloc[:-1]
+
+    kline_data = session_unauth.query_kline(
+        symbol = symbol,
+        interval = interval,
+        from_time=startTime,
+        limit=1
+    )
+
+    df_new = pd.DataFrame(kline_data["result"])
+    df_new.to_csv(f_path, mode='a', index=False, header=False)
+    return df_new
+
 def kline_to_csv(symbols, intervals):
     for symbol in symbols:
         for interval in intervals:
 
-            startTime = 1
             f_name = symbol + "_" + interval + ".csv"
             f_path = os.path.join(default_data_dir, f_name)
+
+            try:
+                df_last = update_last(f_path, symbol, interval)
+                startTime = df_last["open_time"].iat[-1] + 1
+                print("replacing last with " + df_last.to_string())
+            except Exception as e:
+                print(e)
+                startTime = 1
 
             while True:
 
@@ -51,7 +75,10 @@ def kline_to_csv(symbols, intervals):
                 )
 
                 if kline_data["result"] is None:
+                    print("no new data for " + f_name)
                     break
+
+                print("...adding new data to CSV " + f_name)
 
                 df = pd.DataFrame(kline_data["result"])
                 df.to_csv(f_path, mode='a', index=False, header=False)

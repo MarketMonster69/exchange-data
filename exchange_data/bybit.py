@@ -34,11 +34,40 @@ def get_sample_kline():
 
     return response
 
+def remove_last_row(f_path):
+
+    '''https://stackoverflow.com/questions/1877999/delete-final-line-in-file-with-python/10289740'''
+
+    with open(f_path, "r+", encoding = "utf-8") as file:
+        # Move the pointer (similar to a cursor in a text editor) to the end of the file
+        file.seek(0, os.SEEK_END)
+
+        # This code means the following code skips the very last character in the file -
+        # i.e. in the case the last line is null we delete the last line
+        # and the penultimate one
+        pos = file.tell() - 1
+
+        # Read each character in the file one at a time from the penultimate
+        # character going backwards, searching for a newline character
+        # If we find a new line, exit the search
+        while pos > 0 and file.read(1) != "\n":
+            pos -= 1
+            file.seek(pos, os.SEEK_SET)
+
+        # So long as we're not at the start of the file, delete all the characters ahead
+        # of this position
+        if pos > 0:
+            file.seek(pos + 1, os.SEEK_SET)
+            file.truncate()
+
+    return
+
 def update_last(f_path, symbol, interval):
-    df = pd.read_csv(f_path)
+    df = pd.read_csv(f_path, engine='python')
     last_row_csv = df.tail(1).values.tolist()
     startTime = last_row_csv[0][5]
-    df = df.iloc[:-1]
+
+    remove_last_row(f_path)
 
     kline_data = session_unauth.query_kline(
         symbol = symbol,
@@ -61,7 +90,7 @@ def kline_to_csv(symbols, intervals):
             try:
                 df_last = update_last(f_path, symbol, interval)
                 startTime = df_last["open_time"].iat[-1] + 1
-                print("replacing last with " + df_last.to_string())
+                print("replacing last row with updated...")
             except Exception as e:
                 print(e)
                 startTime = 1

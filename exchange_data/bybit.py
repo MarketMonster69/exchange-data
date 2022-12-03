@@ -4,10 +4,10 @@ import time, random
 import pandas as pd
 import os
 
-
+#initial variables
 session_unauth = usdt_perpetual.HTTP(endpoint="https://api.bybit.com")
 symbols = ["BTCUSDT"]
-intervals = ["M", "W", "D", "240", "60", "30"]
+intervals = ["M", "W", "D", "240", "60", "30", "15", "5", "1"]
 
 #kline download path
 default_data_dir = os.path.dirname(os.getcwd()) + "/datasets"
@@ -15,7 +15,7 @@ if not os.path.exists(default_data_dir):
     os.makedirs(default_data_dir)
 
 def get_symbols():
-
+    #gets all symbols/tickers using the session
     response = session_unauth.query_symbol()
     symbols = []
     for x in response["result"]:
@@ -23,8 +23,7 @@ def get_symbols():
     return symbols
 
 def get_sample_kline():
-
-    #query data
+    #gets a small sample of kline data for testing
     response = session_unauth.query_kline(
         symbol = "BTCUSDT",
         interval = "1",
@@ -35,8 +34,8 @@ def get_sample_kline():
     return response
 
 def remove_last_row(f_path):
-
-    '''https://stackoverflow.com/questions/1877999/delete-final-line-in-file-with-python/10289740'''
+    #removes last row in a CSV file using a pointer - better for large files
+    #https://stackoverflow.com/questions/1877999/delete-final-line-in-file-with-python/10289740
 
     with open(f_path, "r+", encoding = "utf-8") as file:
         # Move the pointer (similar to a cursor in a text editor) to the end of the file
@@ -63,6 +62,7 @@ def remove_last_row(f_path):
     return
 
 def update_last(f_path, symbol, interval):
+    #deletes the last row in the dataset and replaces it with an updated row
     df = pd.read_csv(f_path, engine='python')
     last_row_csv = df.tail(1).values.tolist()
     startTime = last_row_csv[0][5]
@@ -81,6 +81,7 @@ def update_last(f_path, symbol, interval):
     return df_new
 
 def kline_to_csv(symbols, intervals):
+    #downloads bybit kline data to CSV files
     for symbol in symbols:
         for interval in intervals:
 

@@ -1,2 +1,2 @@
 # exchange-data
-scripts for handling crypto exchange dats
+scripts for handling crypto exchange data

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import sys
 import time
 import random
 import pandas as pd
@@ -86,7 +85,6 @@ class KlineDownloader:
                     df_last = self.update_last(f_path, symbol, interval)
                     start_time = df_last["open_time"] + 1
                     df_header=False
-                    print(start_time)
                 except FileNotFoundError:
                     print("file does not exist")
                     df_header=True
@@ -101,7 +99,6 @@ class KlineDownloader:
                     )
 
                     if kline_data["result"] is None:
-                        print("break")
                         break
 
                     # Append the data to the file

@@ -17,9 +17,12 @@ class BarDownloader:
         candles = self.client.public.get_candles(
         market=market,
         resolution='1DAY',
+        from_iso="2022-01-01T00:00:00.000Z",
+        limit=100,
         )
 
-        return pd.DataFrame(candles.data['candles'])
+        df = pd.DataFrame(candles.data['candles'])
+        return df
 
 if __name__ == "__main__":
     bd = BarDownloader()

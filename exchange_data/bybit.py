@@ -58,13 +58,16 @@ class KlineDownloader:
             symbol=symbol, interval=interval, from_time=start_time, limit=1
         )
 
-        # Update the dataframe and save it to the file
+        # Update the dataframe
         df_new = pd.DataFrame(kline_data["result"])
+        df_new['start_at'] = pd.to_datetime(df_new['start_at'], unit='s')
+        df_new.set_index('start_at', inplace=True)
 
+        #remove only last row of CSV
         self.remove_last_row(f_path)
 
         # Save only the updated row to the CSV file
-        df_new.to_csv(f_path, mode="a", index=False, header=False)
+        df_new.to_csv(f_path, mode="a", index=True, header=False)
 
         return df_new
 
@@ -101,10 +104,24 @@ class KlineDownloader:
                     if kline_data["result"] is None:
                         break
 
-                    # Append the data to the file
+                    # Format bybit data for Backtesting framework
                     df = pd.DataFrame(kline_data["result"])
-                    df.to_csv(f_path, mode="a", index=False, header=df_header)
+                    df['start_at'] = pd.to_datetime(df['start_at'], unit='s')
+                    df.set_index('start_at', inplace=True)
+                    df.rename(
+                        columns={
+                            'open': 'Open', 
+                            'high': 'High', 
+                            'low': 'Low', 
+                            'close': 'Close', 
+                            'volume': 'Volume'
+                        }, 
+                        inplace=True)
+                    
+                    # Append the data to the file
+                    df.to_csv(f_path, mode="a", index=True, header=df_header)
 
+                    # Get timestamp for next chunk of data
                     start_time = df["open_time"].iat[-1] + 1
 
                     # Sleep for a random interval to avoid hitting rate limits

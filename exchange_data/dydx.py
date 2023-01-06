@@ -17,7 +17,7 @@ class BarDownloader:
         candles = self.client.public.get_candles(
         market=market,
         resolution='1DAY',
-        from_iso="2022-01-01T00:00:00.000Z",
+        to_iso="2022-01-01T00:00:00.000Z",
         limit=100,
         )
 
